@@ -5,6 +5,7 @@
 # plucked from memcached, redis, mysql or whatever.
 require File.expand_path('../example_setup', __FILE__)
 require 'flipper'
+require 'digest/crc32c'
 
 adapter = Flipper::Adapters::Memory.new
 flipper = Flipper.new(adapter)
@@ -27,7 +28,7 @@ end
 PERCENTAGE = 50
 Flipper.register(:experimental) do |actor|
   if actor.respond_to?(:flipper_id)
-    Zlib.crc32(actor.flipper_id.to_s) % 100 < PERCENTAGE
+    Digest::CRC32c.hexdigest(actor.flipper_id.to_s).to_i(16) % 100 < PERCENTAGE
   else
     false
   end
