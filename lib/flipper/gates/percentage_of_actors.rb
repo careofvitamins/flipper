@@ -1,4 +1,4 @@
-require 'zlib'
+require 'digest/crc32'
 
 module Flipper
   module Gates
@@ -32,7 +32,7 @@ module Flipper
           id = "#{context.feature_name}#{actor.value}"
           # this is to support up to 3 decimal places in percentages
           scaling_factor = 1_000
-          Zlib.crc32(id) % (100 * scaling_factor) < percentage * scaling_factor
+          Digest::CRC32c.hexdigest(id).to_i(16) % (100 * scaling_factor) < percentage * scaling_factor
         else
           false
         end
