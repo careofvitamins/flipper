@@ -1,7 +1,7 @@
 require "forwardable"
 
 module Flipper
-  extend self # rubocop:disable Style/ModuleFunction
+  extend self
   extend Forwardable
 
   # Private: The namespace for all instrumented events.
@@ -65,7 +65,8 @@ module Flipper
                  :time, :percentage_of_time,
                  :features, :feature, :[], :preload, :preload_all,
                  :adapter, :add, :exist?, :remove, :import,
-                 :memoize=, :memoizing?
+                 :memoize=, :memoizing?,
+                 :sync, :sync_secret # For Flipper::Cloud. Will error for OSS Flipper.
 
   # Public: Use this to register a group by name.
   #

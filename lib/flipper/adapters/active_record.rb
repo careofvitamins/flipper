@@ -54,19 +54,23 @@ module Flipper
       # Public: Adds a feature to the set of known features.
       def add(feature)
         # race condition, but add is only used by enable/disable which happen
-        # super rarely, so it shouldn't matter in practice; additionally
-        # to_a.first is used instead of first because of a Ruby 2.4/Rails 3.2.21
-        # CI failure (https://travis-ci.org/jnunemaker/flipper/jobs/297274000).
-        unless @feature_class.where(key: feature.key).to_a.first
-          @feature_class.create! { |f| f.key = feature.key }
+        # super rarely, so it shouldn't matter in practice
+        @feature_class.transaction do
+          unless @feature_class.where(key: feature.key).first
+            begin
+              @feature_class.create! { |f| f.key = feature.key }
+            rescue ::ActiveRecord::RecordNotUnique
+            end
+          end
         end
+
         true
       end
 
       # Public: Removes a feature from the set of known features.
       def remove(feature)
         @feature_class.transaction do
-          @feature_class.where(key: feature.key).delete_all
+          @feature_class.where(key: feature.key).destroy_all
           clear(feature)
         end
         true
@@ -74,7 +78,7 @@ module Flipper
 
       # Public: Clears the gate values for a feature.
       def clear(feature)
-        @gate_class.where(feature_key: feature.key).delete_all
+        @gate_class.where(feature_key: feature.key).destroy_all
         true
       end
 
@@ -97,7 +101,7 @@ module Flipper
       end
 
       def get_all
-        rows = ::ActiveRecord::Base.connection.select_all <<-SQL
+        rows = ::ActiveRecord::Base.connection.select_all <<-SQL.tr("\n", ' ')
           SELECT ff.key AS feature_key, fg.key, fg.value
           FROM #{@feature_class.table_name} ff
           LEFT JOIN #{@gate_class.table_name} fg ON ff.key = fg.feature_key
@@ -121,8 +125,10 @@ module Flipper
       # Returns true.
       def enable(feature, gate, thing)
         case gate.data_type
-        when :boolean, :integer
-          enable_single(feature, gate, thing)
+        when :boolean
+          set(feature, gate, thing, clear: true)
+        when :integer
+          set(feature, gate, thing)
         when :set
           enable_multi(feature, gate, thing)
         else
@@ -144,20 +150,9 @@ module Flipper
         when :boolean
           clear(feature)
         when :integer
-          @gate_class.transaction do
-            @gate_class.where(
-              feature_key: feature.key,
-              key: gate.key
-            ).delete_all
-
-            @gate_class.create! do |g|
-              g.feature_key = feature.key
-              g.key = gate.key
-              g.value = thing.value.to_s
-            end
-          end
+          set(feature, gate, thing)
         when :set
-          @gate_class.where(feature_key: feature.key, key: gate.key, value: thing.value).delete_all
+          @gate_class.where(feature_key: feature.key, key: gate.key, value: thing.value).destroy_all
         else
           unsupported_data_type gate.data_type
         end
@@ -172,15 +167,19 @@ module Flipper
 
       private
 
-      def enable_single(feature, gate, thing)
+      def set(feature, gate, thing, options = {})
+        clear_feature = options.fetch(:clear, false)
         @gate_class.transaction do
-          @gate_class.where(feature_key: feature.key, key: gate.key).delete_all
+          clear(feature) if clear_feature
+          @gate_class.where(feature_key: feature.key, key: gate.key).destroy_all
           @gate_class.create! do |g|
             g.feature_key = feature.key
             g.key = gate.key
             g.value = thing.value.to_s
           end
         end
+
+        nil
       end
 
       def enable_multi(feature, gate, thing)
@@ -189,9 +188,10 @@ module Flipper
           g.key = gate.key
           g.value = thing.value.to_s
         end
+
+        nil
       rescue ::ActiveRecord::RecordNotUnique
-      rescue ::ActiveRecord::StatementInvalid => error
-        raise unless error.message =~ /unique/i
+        # already added so no need move on with life
       end
 
       def result_for_feature(feature, db_gates)
@@ -201,12 +201,12 @@ module Flipper
           result[gate.key] =
             case gate.data_type
             when :boolean
-              if db_gate = db_gates.detect { |db_gate| db_gate.key == gate.key.to_s }
-                db_gate.value
+              if detected_db_gate = db_gates.detect { |db_gate| db_gate.key == gate.key.to_s }
+                detected_db_gate.value
               end
             when :integer
-              if db_gate = db_gates.detect { |db_gate| db_gate.key == gate.key.to_s }
-                db_gate.value
+              if detected_db_gate = db_gates.detect { |db_gate| db_gate.key == gate.key.to_s }
+                detected_db_gate.value
               end
             when :set
               db_gates.select { |db_gate| db_gate.key == gate.key.to_s }.map(&:value).to_set

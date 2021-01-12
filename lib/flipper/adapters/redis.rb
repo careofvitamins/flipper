@@ -34,10 +34,8 @@ module Flipper
 
       # Public: Removes a feature from the set of known features.
       def remove(feature)
-        @client.multi do
-          @client.srem FeaturesKey, feature.key
-          @client.del feature.key
-        end
+        @client.srem FeaturesKey, feature.key
+        @client.del feature.key
         true
       end
 
@@ -73,7 +71,10 @@ module Flipper
       # Returns true.
       def enable(feature, gate, thing)
         case gate.data_type
-        when :boolean, :integer
+        when :boolean
+          clear(feature)
+          @client.hset feature.key, gate.key, thing.value.to_s
+        when :integer
           @client.hset feature.key, gate.key, thing.value.to_s
         when :set
           @client.hset feature.key, to_field(gate, thing), 1

@@ -5,7 +5,6 @@ require 'flipper/feature_check_context'
 require 'flipper/gate_values'
 
 module Flipper
-  # rubocop:disable Metrics/ClassLength
   class Feature
     # Private: The name of feature instrumentation events.
     InstrumentationName = "feature_operation.#{InstrumentationNamespace}".freeze
@@ -206,7 +205,7 @@ module Flipper
       boolean = gate(:boolean)
       non_boolean_gates = gates - [boolean]
 
-      if values.boolean || values.percentage_of_actors == 100 || values.percentage_of_time == 100
+      if values.boolean || values.percentage_of_time == 100
         :on
       elsif non_boolean_gates.detect { |gate| gate.enabled?(values[gate.key]) }
         :conditional

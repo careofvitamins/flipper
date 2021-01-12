@@ -4,9 +4,8 @@ An ActiveRecord adapter for [Flipper](https://github.com/jnunemaker/flipper).
 
 Supported Active Record versions:
 
-* 3.2.x
-* 4.2.x
 * 5.0.x
+* 6.0.x
 
 ## Installation
 
@@ -36,6 +35,8 @@ adapter = Flipper::Adapters::ActiveRecord.new
 flipper = Flipper.new(adapter)
 # profit...
 ```
+
+Note that the active record adapter requires the database tables to be created in order to work; failure to run the migration first will cause an exception to be raised when attempting to initialize the active record adapter.
 
 ## Internals
 

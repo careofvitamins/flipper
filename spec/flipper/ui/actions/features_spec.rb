@@ -13,19 +13,58 @@ RSpec.describe Flipper::UI::Actions::Features do
   end
 
   describe 'GET /features' do
-    before do
-      flipper[:stats].enable
-      flipper[:search].enable
-      get '/features'
+    context "when there are some features" do
+      before do
+        flipper[:stats].enable
+        flipper[:search].enable
+        get '/features'
+      end
+
+      it 'responds with success' do
+        expect(last_response.status).to be(200)
+      end
+
+      it 'renders template' do
+        expect(last_response.body).to include('stats')
+        expect(last_response.body).to include('search')
+      end
     end
 
-    it 'responds with success' do
-      expect(last_response.status).to be(200)
-    end
+    context "when there are no features to list" do
+      before do
+        @original_fun_enabled = Flipper::UI.configuration.fun
+        Flipper::UI.configuration.fun = fun_mode
+      end
 
-    it 'renders template' do
-      expect(last_response.body).to include('stats')
-      expect(last_response.body).to include('search')
+      after do
+        Flipper::UI.configuration.fun = @original_fun_enabled
+      end
+
+      context "when fun mode is enabled" do
+        let(:fun_mode) { true }
+        before { get '/features' }
+
+        it 'responds with success' do
+          expect(last_response.status).to be(200)
+        end
+
+        it 'renders template' do
+          expect(last_response.body).to include('And I\'ll flip your features.')
+        end
+      end
+
+      context "when fun mode is disabled" do
+        let(:fun_mode) { false }
+        before { get '/features' }
+
+        it 'responds with success' do
+          expect(last_response.status).to be(200)
+        end
+
+        it 'renders template' do
+          expect(last_response.body).to include('You have not added any features to configure yet.')
+        end
+      end
     end
   end
 
@@ -72,12 +111,10 @@ RSpec.describe Flipper::UI::Actions::Features do
             expect(flipper.features.map(&:key)).to eq([])
           end
 
-          # rubocop:disable Metrics/LineLength
           it 'redirects back to feature' do
             expect(last_response.status).to be(302)
             expect(last_response.headers['Location']).to eq('/features/new?error=%22%22+is+not+a+valid+feature+name.')
           end
-          # rubocop:enable Metrics/LineLength
         end
 
         context 'nil feature name' do
@@ -87,12 +124,10 @@ RSpec.describe Flipper::UI::Actions::Features do
             expect(flipper.features.map(&:key)).to eq([])
           end
 
-          # rubocop:disable Metrics/LineLength
           it 'redirects back to feature' do
             expect(last_response.status).to be(302)
             expect(last_response.headers['Location']).to eq('/features/new?error=%22%22+is+not+a+valid+feature+name.')
           end
-          # rubocop:enable Metrics/LineLength
         end
       end
     end

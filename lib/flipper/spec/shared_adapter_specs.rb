@@ -1,6 +1,5 @@
 # Requires the following methods:
 # * subject - The instance of the adapter
-# rubocop:disable Metrics/BlockLength
 RSpec.shared_examples_for 'a flipper adapter' do
   let(:flipper) { Flipper.new(subject) }
   let(:feature) { flipper[:stats] }
@@ -279,5 +278,30 @@ RSpec.shared_examples_for 'a flipper adapter' do
     expect(subject.enable(feature, group_gate, flipper.group(:admins))).to eq(true)
     expect(subject.enable(feature, group_gate, flipper.group(:admins))).to eq(true)
     expect(subject.get(feature).fetch(:groups)).to eq(Set['admins'])
+  end
+
+  it 'can double enable percentage without error' do
+    expect(subject.enable(feature, actors_gate, flipper.actors(25))).to eq(true)
+    expect(subject.enable(feature, actors_gate, flipper.actors(25))).to eq(true)
+  end
+
+  it 'can double enable without error' do
+    expect(subject.enable(feature, boolean_gate, flipper.boolean)).to eq(true)
+    expect(subject.enable(feature, boolean_gate, flipper.boolean)).to eq(true)
+  end
+
+  it 'can get_all features when there are none' do
+    expect(subject.features).to eq(Set.new)
+    expect(subject.get_all).to eq({})
+  end
+
+  it 'clears other gate values on enable' do
+    actor = Flipper::Actor.new('Flipper::Actor;22')
+    subject.enable(feature, actors_gate, flipper.actors(25))
+    subject.enable(feature, time_gate, flipper.time(25))
+    subject.enable(feature, group_gate, flipper.group(:admins))
+    subject.enable(feature, actor_gate, flipper.actor(actor))
+    subject.enable(feature, boolean_gate, flipper.boolean(true))
+    expect(subject.get(feature)).to eq(subject.default_config.merge(boolean: "true"))
   end
 end

@@ -3,43 +3,10 @@ require 'helper'
 RSpec.describe Flipper::UI::Configuration do
   let(:configuration) { described_class.new }
 
-  describe "#actors" do
-    it "has default text" do
-      expect(configuration.actors.title).to eq("Actors")
-      expect(configuration.actors.description).to eq("Enable actors using the form above.")
-    end
-
-    it "can be updated" do
-      configuration.actors.title = "Actors Section"
-      expect(configuration.actors.title).to eq("Actors Section")
-    end
-  end
-
-  describe "#groups" do
-    it "has default text" do
-      expect(configuration.groups.title).to eq("Groups")
-      expect(configuration.groups.description).to eq("Enable groups using the form above.")
-    end
-  end
-
-  describe "#percentage_of_actors" do
-    it "has default text" do
-      expect(configuration.percentage_of_actors.title).to eq("Percentage of Actors")
-      expect(configuration.percentage_of_actors.description).to eq("Percentage of actors functions independently of percentage of time. If you enable 50% of Actors and 25% of Time then the feature will always be enabled for 50% of users and occasionally enabled 25% of the time for everyone.") # rubocop:disable Metrics/LineLength
-    end
-  end
-
-  describe "#percentage_of_time" do
-    it "has default text" do
-      expect(configuration.percentage_of_time.title).to eq("Percentage of Time")
-      expect(configuration.percentage_of_time.description).to eq("Percentage of actors functions independently of percentage of time. If you enable 50% of Actors and 25% of Time then the feature will always be enabled for 50% of users and occasionally enabled 25% of the time for everyone.") # rubocop:disable Metrics/LineLength
-    end
-  end
-
   describe "#delete" do
     it "has default text" do
       expect(configuration.delete.title).to eq("Danger Zone")
-      expect(configuration.delete.description).to eq("Deleting a feature removes it from the list of features and disables it for everyone.") # rubocop:disable Metrics/LineLength
+      expect(configuration.delete.description).to eq("Deleting a feature removes it from the list of features and disables it for everyone.")
     end
   end
 
@@ -100,6 +67,74 @@ RSpec.describe Flipper::UI::Configuration do
     it "can be updated" do
       configuration.feature_removal_enabled = false
       expect(configuration.feature_removal_enabled).to eq(false)
+    end
+  end
+
+  describe "#fun" do
+    it "has default value" do
+      expect(configuration.fun).to eq(true)
+    end
+
+    it "can be updated" do
+      configuration.fun = false
+      expect(configuration.fun).to eq(false)
+    end
+  end
+
+  describe "#descriptions_source" do
+    it "has default value" do
+      expect(configuration.descriptions_source.call(%w[foo bar])).to eq({})
+    end
+
+    context "descriptions source is provided" do
+      it "can be updated" do
+        configuration.descriptions_source = lambda do |_keys|
+          YAML.load_file(FlipperRoot.join('spec/support/descriptions.yml'))
+        end
+        keys = %w[some_awesome_feature foo]
+        result = configuration.descriptions_source.call(keys)
+        expected = {
+          "some_awesome_feature" => "Awesome feature description",
+        }
+        expect(result).to eq(expected)
+      end
+    end
+  end
+
+  describe "#show_feature_description_in_list" do
+    it "has default value" do
+      expect(configuration.show_feature_description_in_list).to eq(false)
+    end
+
+    it "can be updated" do
+      configuration.show_feature_description_in_list = true
+      expect(configuration.show_feature_description_in_list).to eq(true)
+    end
+  end
+
+  describe "#show_feature_description_in_list?" do
+    subject { configuration.show_feature_description_in_list? }
+
+    context 'when using_descriptions? is false and show_feature_description_in_list is false' do
+      it { is_expected.to eq(false) }
+    end
+
+    context 'when using_descriptions? is false and show_feature_description_in_list is true' do
+      before { configuration.show_feature_description_in_list = true }
+      it { is_expected.to eq(false) }
+    end
+
+    context 'when using_descriptions? is true and show_feature_description_in_list is false' do
+      before { allow(configuration).to receive(:using_descriptions?).and_return(true) }
+      it { is_expected.to eq(false) }
+    end
+
+    context 'when using_descriptions? is true and show_feature_description_in_list is true' do
+      before do
+        allow(configuration).to receive(:using_descriptions?).and_return(true)
+        configuration.show_feature_description_in_list = true
+      end
+      it { is_expected.to eq(true) }
     end
   end
 end

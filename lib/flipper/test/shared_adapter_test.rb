@@ -1,4 +1,3 @@
-# rubocop:disable Metrics/ModuleLength
 module Flipper
   module Test
     module SharedAdapterTests
@@ -43,7 +42,7 @@ module Flipper
         assert_equal true, @adapter.enable(@feature, @boolean_gate, @flipper.boolean)
         assert_equal 'true', @adapter.get(@feature)[:boolean]
         assert_equal true, @adapter.disable(@feature, @boolean_gate, @flipper.boolean(false))
-        assert_equal nil, @adapter.get(@feature)[:boolean]
+        assert_nil @adapter.get(@feature)[:boolean]
       end
 
       def test_fully_disables_all_enabled_things_when_boolean_gate_disabled
@@ -274,6 +273,32 @@ module Flipper
         assert_equal true, @adapter.enable(@feature, @group_gate, @flipper.group(:admins))
         assert_equal true, @adapter.enable(@feature, @group_gate, @flipper.group(:admins))
         assert_equal Set['admins'], @adapter.get(@feature).fetch(:groups)
+      end
+
+      def test_can_double_enable_percentage_without_error
+        assert_equal true, @adapter.enable(@feature, @actors_gate, @flipper.actors(25))
+        assert_equal true, @adapter.enable(@feature, @actors_gate, @flipper.actors(25))
+      end
+
+      def test_can_double_enable_without_error
+        assert_equal true, @adapter.enable(@feature, @boolean_gate, @flipper.boolean)
+        assert_equal true, @adapter.enable(@feature, @boolean_gate, @flipper.boolean)
+      end
+
+      def test_can_get_all_features_when_there_are_none
+        expected = {}
+        assert_equal Set.new, @adapter.features
+        assert_equal expected, @adapter.get_all
+      end
+
+      def test_clears_other_gate_values_on_enable
+        actor = Flipper::Actor.new('Flipper::Actor;22')
+        assert_equal true, @adapter.enable(@feature, @actors_gate, @flipper.actors(25))
+        assert_equal true, @adapter.enable(@feature, @time_gate, @flipper.time(25))
+        assert_equal true, @adapter.enable(@feature, @group_gate, @flipper.group(:admins))
+        assert_equal true, @adapter.enable(@feature, @actor_gate, @flipper.actor(actor))
+        assert_equal true, @adapter.enable(@feature, @boolean_gate, @flipper.boolean(true))
+        assert_equal @adapter.default_config.merge(boolean: "true"), @adapter.get(@feature)
       end
     end
   end

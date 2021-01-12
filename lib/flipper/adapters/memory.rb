@@ -2,7 +2,7 @@ require 'set'
 
 module Flipper
   module Adapters
-    # Public: Adapter for storing everything in memory (ie: Hash).
+    # Public: Adapter for storing everything in memory.
     # Useful for tests/specs.
     class Memory
       include ::Flipper::Adapter
@@ -65,7 +65,10 @@ module Flipper
       # Public
       def enable(feature, gate, thing)
         case gate.data_type
-        when :boolean, :integer
+        when :boolean
+          clear(feature)
+          write key(feature, gate), thing.value.to_s
+        when :integer
           write key(feature, gate), thing.value.to_s
         when :set
           set_add key(feature, gate), thing.value.to_s

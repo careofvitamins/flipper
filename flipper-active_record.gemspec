@@ -10,7 +10,6 @@ Gem::Specification.new do |gem|
   gem.authors       = ['John Nunemaker']
   gem.email         = ['nunemaker@gmail.com']
   gem.summary       = 'ActiveRecord adapter for Flipper'
-  gem.description   = 'ActiveRecord adapter for Flipper'
   gem.license       = 'MIT'
   gem.homepage      = 'https://github.com/jnunemaker/flipper'
 
@@ -26,5 +25,5 @@ Gem::Specification.new do |gem|
   gem.metadata      = Flipper::METADATA
 
   gem.add_dependency 'flipper', "~> #{Flipper::VERSION}"
-  gem.add_dependency 'activerecord', '>= 3.2', '< 6'
+  gem.add_dependency 'activerecord', '>= 5.0', '< 7'
 end

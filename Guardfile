@@ -19,27 +19,3 @@ guard 'rspec', rspec_options do
   watch(/shared_adapter_specs\.rb$/) { 'spec' }
   watch('spec/helper.rb') { 'spec' }
 end
-
-coffeescript_options = {
-  input: 'lib/flipper/ui/assets/javascripts',
-  output: 'lib/flipper/ui/public/js',
-  patterns: [%r{^lib/flipper/ui/assets/javascripts/(.+\.(?:coffee|coffee\.md|litcoffee))$}],
-}
-
-guard 'coffeescript', coffeescript_options do
-  coffeescript_options[:patterns].each { |pattern| watch(pattern) }
-end
-
-sass_options = {
-  input: 'lib/flipper/ui/assets/stylesheets',
-  output: 'lib/flipper/ui/public/css',
-}
-guard 'sass', sass_options
-
-rubo_options = {
-  all_on_start: false,
-}
-guard :rubocop, rubo_options do
-  watch(/.+\.rb$/)
-  watch(%r{(?:.+/)?\.rubocop(?:_todo)?\.yml$}) { |m| File.dirname(m[0]) }
-end

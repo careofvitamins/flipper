@@ -5,9 +5,11 @@ UI for the [Flipper](https://github.com/jnunemaker/flipper) gem.
 ## Screenshots
 
 Viewing list of features:
+
 ![features](images/features.png)
 
 Viewing an individual feature:
+
 ![feature](images/feature.png)
 
 ## Installation
@@ -37,14 +39,15 @@ YourRailsApp::Application.routes.draw do
 end
 ```
 
-If you'd like to lazy load flipper, you can pass a block instead:
+If you'd like to lazy load flipper, you can instead pass a block to initialize it:
 
 ```ruby
 # config/routes.rb
 YourRailsApp::Application.routes.draw do
   flipper_block = lambda {
     # some flipper initialization here, for example:
-    # YourRailsApp.flipper
+    adapter = Flipper::Adapters::Memory.new
+    Flipper.new(adapter)
   }
   mount Flipper::UI.app(flipper_block) => '/flipper'
 end
@@ -95,7 +98,7 @@ end
 # config/routes.rb
 
 constraints CanAccessFlipperUI do
-  mount Flipper::UI.app(flipper) => '/flipper'
+  mount Flipper::UI.app(Flipper) => '/flipper'
 end
 ```
 
@@ -126,32 +129,30 @@ See [examples/ui/basic.ru](https://github.com/jnunemaker/flipper/blob/master/exa
 
 ### Configuration
 
-Flipper UI can be customized via `configure`, which yields a configuration instance for setting the text on the five main sections of the UI feature view.
+Flipper UI can be customized via `configure`, which yields a configuration instance.
 
-* `config.actors`
-* `config.groups`
-* `config.percentage_of_actors`
-* `config.percentage_of_time`
-* `config.delete`
+#### Description
 
-Each of these methods returns a [Flipper::UI::Option](https://github.com/jnunemaker/flipper/blob/master/lib/flipper/ui/configuration/option.rb) that responds to `title=`, `description=` as seen below.
+We can associate a `description` for each `feature` by providing a descriptions source:
 
-*e.g. customzing the percentage_of_actors and delete sections' titles and descriptions*
 ```ruby
 Flipper::UI.configure do |config|
-  config.percentage_of_actors.title = "My Custom Title"
-  config.percentage_of_actors.description = "My custom description"
+  config.descriptions_source = ->(keys) do
+    # descriptions loaded from YAML file or database (postgres, mysql, etc)
+    # return has to be hash of {String key => String description}
+  end
 
-  config.delete.title = "BE VERY CAREFUL!"
-  config.delete.description = "YOU'VE BEEN WARNED!"
+  # Defaults to false. Set to true to show feature descriptions on the list
+  # page as well as the view page.
+  # config.show_feature_description_in_list = true
 end
 ```
 
-results in:
+Descriptions show up in the UI like so:
 
-![configure](images/configured-ui.png)
+![description](images/description.png)
 
-### Banner
+#### Banner
 
 Flipper UI can display a banner across the top of the page. The `banner_text` and `banner_class` can be configured by using the `Flipper::UI.configure` block as seen below.
 
@@ -166,15 +167,24 @@ By default the `environment` is set to an empty string so no banner will show. I
 
 The above configuration results in:
 
-![configure](images/environment-banner.png)
+![banner](images/banner.png)
+
+#### Fun mode
+
+By default, Flipper UI displays a videoclip when there are no flags. The `fun` mode can be configured by using the `Flipper::UI.configure` block as seen below.
+
+```ruby
+Flipper::UI.configure do |config|
+  config.fun = false
+end
+```
 
 ## Contributing
 
 1. Fork it
 2. Create your feature branch (`git checkout -b my-new-feature`)
 3. **Fire up the app** (`script/server`)
-4. **Start up guard** (`bundle exec guard` for automatic coffeescript/sass compilation and such).
-5. Run the tests `bundle exec rake`
-6. Commit your changes (`git commit -am 'Added some feature'`)
-7. Push to the branch (`git push origin my-new-feature`)
-8. Create new Pull Request
+4. Run the tests `bundle exec rake`
+5. Commit your changes (`git commit -am 'Added some feature'`)
+6. Push to the branch (`git push origin my-new-feature`)
+7. Create new Pull Request

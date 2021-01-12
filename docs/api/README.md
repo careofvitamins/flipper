@@ -527,7 +527,7 @@ Successful enabling of the actor will return a 200 HTTP status and the feature o
     {
       "key": "actors",
       "name": "actor",
-      "value": ["User:1"]
+      "value": ["User;1"]
     },
     {
       "key": "percentage_of_actors",
@@ -812,6 +812,41 @@ Successful disabling of a percentage of time will set the percentage to 0 and re
       "value": 0
     }
   ]
+}
+```
+
+### Check if features are enabled for an actor
+
+**URL**
+
+`GET /actors/{flipper_id}`
+
+**Parameters**
+
+* `keys` - comma-separated list of features to check
+
+**Request**
+
+```
+curl -X GET http://example.com/flipper/api/actors/User;1?keys=my_feature_1,my_feature_2
+```
+
+**Response**
+
+Returns whether the actor with the provided flipper_id is enabled for the specififed feature keys.
+If no keys are specified all features are returned.
+
+```json
+{
+  "flipper_id": "User;1",
+    "features": {
+      "my_feature_1": {
+        "enabled": true,
+      },
+      "my_feature_2": {
+        "enabled": false,
+      }
+    }
 }
 ```
 

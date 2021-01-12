@@ -70,6 +70,15 @@ RSpec.describe Flipper::UI::Actions::Feature do
 
   describe 'GET /features/:feature' do
     before do
+      Flipper::UI.configure do |config|
+        config.descriptions_source = lambda { |_keys|
+          {
+            "stats" => "Most awesome stats",
+            "search" => "Most in-depth search",
+          }
+        }
+      end
+
       get '/features/search'
     end
 
@@ -81,10 +90,11 @@ RSpec.describe Flipper::UI::Actions::Feature do
       expect(last_response.body).to include('search')
       expect(last_response.body).to include('Enable')
       expect(last_response.body).to include('Disable')
-      expect(last_response.body).to include('Actors')
-      expect(last_response.body).to include('Groups')
-      expect(last_response.body).to include('Percentage of Time')
-      expect(last_response.body).to include('Percentage of Actors')
+      expect(last_response.body).to include('No actors enabled')
+      expect(last_response.body).to include('No groups enabled')
+      expect(last_response.body).to include('Enabled for 0% of time')
+      expect(last_response.body).to include('Enabled for 0% of actors')
+      expect(last_response.body).to include('Most in-depth search')
     end
   end
 
@@ -99,12 +109,6 @@ RSpec.describe Flipper::UI::Actions::Feature do
 
     it 'renders template' do
       expect(last_response.body).to include('search_features')
-      expect(last_response.body).to include('Enable')
-      expect(last_response.body).to include('Disable')
-      expect(last_response.body).to include('Actors')
-      expect(last_response.body).to include('Groups')
-      expect(last_response.body).to include('Percentage of Time')
-      expect(last_response.body).to include('Percentage of Actors')
     end
   end
 
@@ -119,12 +123,6 @@ RSpec.describe Flipper::UI::Actions::Feature do
 
     it 'renders template' do
       expect(last_response.body).to include('a/b')
-      expect(last_response.body).to include('Enable')
-      expect(last_response.body).to include('Disable')
-      expect(last_response.body).to include('Actors')
-      expect(last_response.body).to include('Groups')
-      expect(last_response.body).to include('Percentage of Time')
-      expect(last_response.body).to include('Percentage of Actors')
     end
   end
 end

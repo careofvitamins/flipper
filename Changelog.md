@@ -1,3 +1,85 @@
+## 0.20.0
+
+## Additions/Changes
+
+* Add support for webhooks to `Flipper::Cloud` (https://github.com/jnunemaker/flipper/pull/489).
+
+## 0.19.1
+
+### Additions/Changes
+
+* Bump rack-protection version to < 2.2 (https://github.com/jnunemaker/flipper/pull/487)
+* Add memoizer_options to Flipper::Api.app (https://github.com/jnunemaker/flipper/commit/174ad4bb94046a25c432d3c53fe1ff9f5a76d838)
+
+## 0.19.0
+
+### Additions/Changes
+
+* 100% of actors is now considered conditional. Feature#on?, Feature#conditional?, Feature#state would all be affected. See https://github.com/jnunemaker/flipper/issues/463 for more.
+* Several doc updates.
+
+## 0.18.0
+
+### Additions/Changes
+
+* Add support for feature descriptions to flipper-ui (https://github.com/jnunemaker/flipper/pull/461).
+* Remove rubocop (https://github.com/jnunemaker/flipper/pull/469).
+* flipper-ui redesign (https://github.com/jnunemaker/flipper/pull/470).
+* Removed support for ruby 2.4.
+* Added support for ruby 2.7.
+* Removed support for Rails 4.x.x.
+* Removed support for customizing actors, groups, % of actors and % of time text in flipper-ui in favor of automatic and more descriptive text.
+
+## 0.17.2
+
+### Additions/Changes
+
+* Avoid errors on import when there are no features and shared specs/tests for get all with no features (https://github.com/jnunemaker/flipper/pull/441 and https://github.com/jnunemaker/flipper/pull/442)
+* ::ActiveRecord::RecordNotUnique > ActiveRecord::RecordNotUnique (https://github.com/jnunemaker/flipper/pull/444)
+* Clear gate values on enable (https://github.com/jnunemaker/flipper/pull/454)
+* Remove use of multi from redis adapter (https://github.com/jnunemaker/flipper/pull/451)
+
+## 0.17.1
+
+* Fix require in flipper-active_record (https://github.com/jnunemaker/flipper/pull/437)
+
+## 0.17.0
+
+### Additions/Changes
+
+* Allow shorthand block notation on group types (https://github.com/jnunemaker/flipper/pull/406)
+* Relax active record/support constraints to support Rails 6 (https://github.com/jnunemaker/flipper/pull/409)
+* Allow disabling fun (https://github.com/jnunemaker/flipper/pull/413)
+* Include thing_value in payload of Instrumented#enable and #disable (https://github.com/jnunemaker/flipper/pull/417)
+* Replace Erubis with Erubi (https://github.com/jnunemaker/flipper/pull/407)
+* Allow customizing Rack::Protection middleware list (https://github.com/jnunemaker/flipper/pull/385)
+* Allow setting write_timeout for ruby 2.6+ (https://github.com/jnunemaker/flipper/pull/433)
+* Drop support for Ruby 2.1, 2.2, and 2.3 (https://github.com/jnunemaker/flipper/commit/cf58982e70de5e6963b018ceced4f36a275f5b5d)
+* Add support for Ruby 2.6 (https://github.com/jnunemaker/flipper/commit/57888311449ec81184d3d47ba9ae5cb1ad4a2f45)
+* Remove support for Rails 3.2 (https://github.com/jnunemaker/flipper/commit/177c48c4edf51d4e411e7c673e30e06d1c66fb40)
+* Add write_timeout for flipper http adapter for ruby 2.6+ (https://github.com/jnunemaker/flipper/pull/433)
+* Relax moneta version to allow for < 1.2 (https://github.com/jnunemaker/flipper/pull/434).
+* Improve active record idempotency (https://github.com/jnunemaker/flipper/pull/436).
+* Allow customizing add actor placeholder text (https://github.com/jnunemaker/flipper/commit/5faa1e9cf66b68f8227d2f8408fb448a14676c45)
+
+## 0.16.2
+
+### Additions/Changes
+
+* Bump rollout redis dependency to < 5 (https://github.com/jnunemaker/flipper/pull/403)
+* Bump redis dependency to < 5 (https://github.com/jnunemaker/flipper/pull/401)
+* Bump sequel dependency to < 6 (https://github.com/jnunemaker/flipper/pull/399 and https://github.com/jnunemaker/flipper/commit/edc767e69b4ce8daead9801f38e0e8bf6b238765)
+
+## 0.16.1
+
+### Additions/Changes
+
+* Add actors API endpoint (https://github.com/jnunemaker/flipper/pull/372).
+* Fix rack body proxy require for those using flipper without rack  (https://github.com/jnunemaker/flipper/pull/376).
+* Unescapes feature_name in FeatureNameFromRoute (https://github.com/jnunemaker/flipper/pull/377).
+* Replace delete_all with destroy_all in ActiveRecord adapter (https://github.com/jnunemaker/flipper/pull/395)
+* Target correct bootstrap breakpoints in flipper UI (https://github.com/jnunemaker/flipper/pull/396)
+
 ## 0.16.0
 
 ### Bug Fixes
@@ -40,7 +122,7 @@
 
 ### Additions/Changes
 
-* Added rollout adapter documentation (https://github.com/jnunemaker/flipper/pull/328).  
+* Added rollout adapter documentation (https://github.com/jnunemaker/flipper/pull/328).
 
 ### Bug Fixes
 
@@ -174,8 +256,8 @@
 
 * Added Flipper.groups and Flipper.group_names
 * Changed percentage_of_random to percentage_of_time
-* Added enable/disable convenience methods for all gates (ie: enable_group, enable_actor, enable_percentage_of_actors, enable_percentage_of_time)
-* Added value convenience methods (ie: boolean_value, groups_value, actors_value, etc.)
+* Added enable/disable convenience methods for all gates (enable_group, enable_actor, enable_percentage_of_actors, enable_percentage_of_time)
+* Added value convenience methods (boolean_value, groups_value, actors_value, etc.)
 * Added Feature#gate_values for getting typecast adapter gate values
 * Added Feature#enabled_gates and #disabled_gates for getting the gates that are enabled/disabled for the feature
 * Remove Feature#description

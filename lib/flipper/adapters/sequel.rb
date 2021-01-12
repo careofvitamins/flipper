@@ -120,15 +120,10 @@ module Flipper
       # Returns true.
       def enable(feature, gate, thing)
         case gate.data_type
-        when :boolean, :integer
-          @gate_class.db.transaction do
-            args = {
-              feature_key: feature.key,
-              key: gate.key.to_s,
-            }
-            @gate_class.where(args).delete
-            @gate_class.create(gate_attrs(feature, gate, thing))
-          end
+        when :boolean
+          set(feature, gate, thing, clear: true)
+        when :integer
+          set(feature, gate, thing)
         when :set
           begin
             @gate_class.create(gate_attrs(feature, gate, thing))
@@ -153,15 +148,7 @@ module Flipper
         when :boolean
           clear(feature)
         when :integer
-          @gate_class.db.transaction do
-            args = {
-              feature_key: feature.key.to_s,
-              key: gate.key.to_s,
-            }
-            @gate_class.where(args).delete
-
-            @gate_class.create(gate_attrs(feature, gate, thing))
-          end
+          set(feature, gate, thing)
         when :set
           @gate_class.where(gate_attrs(feature, gate, thing))
                      .delete
@@ -178,6 +165,20 @@ module Flipper
         raise "#{data_type} is not supported by this adapter"
       end
 
+      def set(feature, gate, thing, options = {})
+        clear_feature = options.fetch(:clear, false)
+        args = {
+          feature_key: feature.key,
+          key: gate.key.to_s,
+        }
+
+        @gate_class.db.transaction do
+          clear(feature) if clear_feature
+          @gate_class.where(args).delete
+          @gate_class.create(gate_attrs(feature, gate, thing))
+        end
+      end
+
       def gate_attrs(feature, gate, thing)
         {
           feature_key: feature.key.to_s,
@@ -192,12 +193,12 @@ module Flipper
           result[gate.key] =
             case gate.data_type
             when :boolean
-              if db_gate = db_gates.detect { |db_gate| db_gate.key == gate.key.to_s }
-                db_gate.value
+              if detected_db_gate = db_gates.detect { |db_gate| db_gate.key == gate.key.to_s }
+                detected_db_gate.value
               end
             when :integer
-              if db_gate = db_gates.detect { |db_gate| db_gate.key == gate.key.to_s }
-                db_gate.value
+              if detected_db_gate = db_gates.detect { |db_gate| db_gate.key == gate.key.to_s }
+                detected_db_gate.value
               end
             when :set
               db_gates.select { |db_gate| db_gate.key == gate.key.to_s }.map(&:value).to_set

@@ -1,6 +1,7 @@
 require 'forwardable'
+require 'flipper/ui/configuration'
 require 'flipper/ui/error'
-require 'flipper/ui/eruby'
+require 'erubi'
 require 'json'
 
 module Flipper
@@ -10,7 +11,7 @@ module Flipper
         def feature_name
           @feature_name ||= begin
             match = request.path_info.match(self.class.route_regex)
-            match ? match[:feature_name] : nil
+            match ? Rack::Utils.unescape(match[:feature_name]) : nil
           end
         end
         private :feature_name
@@ -205,12 +206,8 @@ module Flipper
       # Private
       def view(name)
         path = views_path.join("#{name}.erb")
-
         raise "Template does not exist: #{path}" unless path.exist?
-
-        contents = path.read
-        compiled = Eruby.new(contents)
-        compiled.result proc {}.binding
+        eval(Erubi::Engine.new(path.read, escape: true).src)
       end
 
       # Internal: The path the app is mounted at.
